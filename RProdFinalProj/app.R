@@ -28,7 +28,8 @@ ui <- fluidPage(
     # Show a plot of the generated distribution
     mainPanel(
       plotOutput("distPlot"),
-      plotOutput("distPlot2")
+      plotOutput("distPlot2"),
+      textOutput("summ")
     )
   )
 )
@@ -36,26 +37,27 @@ ui <- fluidPage(
 # Define server logic required to draw a histogram
 server <- function(input, output) {
   
-  
+  events_sev <- reactive(rgamma(10000,input$alpha,rate=input$beta))
+  set.seed(1)
+  events_ct <- reactive(rpois(10000,input$lambda))
   output$distPlot <- renderPlot({
-    set.seed(1)
-    events_ct <- rpois(10000,input$lambda)
-    events_sev <- rgamma(10000,input$alpha,rate=input$beta)
     
+    
+    # events_sev <<- rgamma(10000,input$alpha,rate=input$beta)
     par(mfrow=c(1,2)) 
-    hist(events_ct, probability = TRUE, breaks = as.numeric(input$n_breaks), 
+    hist(events_ct(), probability = TRUE, breaks = as.numeric(input$n_breaks), 
          xlab = "Number of occurences", main = "Number of occurences histogram (Poisson)")
-    hist(events_sev, probability = TRUE, breaks =
+    hist(events_sev(), probability = TRUE, breaks =
            as.numeric(input$n_breaks), 
          xlab = "Severity", main = "Severity histogram (Gamma)")
   })
   output$distPlot2 <- renderPlot({
-    set.seed(1)
-    events_ct <- rpois(10000,input$lambda)
-    events_sev <- rgamma(10000,input$alpha,rate=input$beta)
     
-    hist(events_ct*events_sev, probability = TRUE, breaks = as.numeric(input$n_breaks), 
+    hist(events_ct()*events_sev(), probability = TRUE, breaks = as.numeric(input$n_breaks), 
          xlab = "Total annual rainfall", main = "Histogram of total annual rainfal")
+  })
+  output$summ <- renderText({
+    paste("Mean: ", mean(events_ct()*events_sev()))
   })
 }
 
