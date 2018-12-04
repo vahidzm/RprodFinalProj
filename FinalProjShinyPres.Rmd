@@ -1,0 +1,85 @@
+---
+title: "Compound Poisson Distribution"
+author: "Vahid Meimand"
+Date: "10/18/2018"
+runtime: shiny
+output: ioslides_presentation
+fontsize: 8pt
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## Outline
+
+- App Summary
+- Statistical Background
+- Results
+
+## App Summary
+This application illustrates how a combination of poisson and gamma distributions can be used to calculate the total rain fall in a year or the total loss amount for an insurance policy over a given period.
+
+In both cases the number of occurances is simulated with a Poisson distrubution with the mean number of occurances, $\lambda$.  The severity/magnitude of events has been simulated using a Gamma distribution with shape parameter, $\alpha$ and the rate parameter,$\beta$.
+
+Note, that the mean and variance of the magnitude has the following relationship to the rate and shape parameters: $$\mu = \alpha / \beta$$$$\sigma^2 = \alpha / \beta^2$$
+
+
+
+## Statistical Background
+Here is an illustration of the Poisson and Gamma Distributions:
+```{r,fig.width=4, fig.height=2,, tidy=TRUE}
+inputPanel(
+  column(6,
+         sliderInput("n_breaks","number of bins", 
+                     step=1,min=5, max=100, value = 20),
+         numericInput("lambda", label = "Lambda:",
+                      min = 1, max = 100, value = 3)),
+  column(6,
+         numericInput("alpha", label = "Alpha:",
+                      min = 1, max = 20000, value = 20),
+         numericInput("beta", label = "Beta:",
+                      min = 1, max = 1000, value = 10)
+  )
+)
+column(6,
+renderPlot({
+  set.seed(1)
+  events_ct <<- rpois(10000,input$lambda)
+  hist(events_ct, probability = TRUE, breaks = as.numeric(input$n_breaks), 
+       xlab = "Duration (minutes)", main = "Poisson histogram")
+  }))
+
+column(6,
+       renderPlot({
+         set.seed(1)
+         events_sev <<- rgamma(10000,input$alpha,rate=input$beta)
+         hist(events_sev, probability = TRUE, breaks =
+              as.numeric(input$n_breaks), 
+              xlab = "Duration (minutes)", main = "Poisson histogram")
+  }))
+```
+
+
+
+## Results
+Here after performing 10000 simulations for total annual rainfal based on the parameters specified in the previous slide, the following histogram is resulted:
+```{r}
+renderPlot({
+       hist(events_sev*events_ct, probability = TRUE, breaks =
+              as.numeric(input$n_breaks), 
+              xlab = "total annual rainfall", main = "Histogram for total annual rainfall for 10000 simlations")
+  })
+```
+
+## Summary
+Here is a summary of the simulated raifalls
+```{r, echo=T}
+renderText({
+  summary(events_sev*events_ct)})
+```
+
+
+<br><br>
+The files are all available in git repo:
+
