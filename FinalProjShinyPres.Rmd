@@ -42,19 +42,21 @@ inputPanel(
                       min = 1, max = 1000, value = 10)
   )
 )
+events_ct <- reactive(rpois(10000,input$lambda))
 column(6,
 renderPlot({
-  set.seed(1)
-  events_ct <<- rpois(10000,input$lambda)
-  hist(events_ct, probability = TRUE, breaks = as.numeric(input$n_breaks), 
+  # set.seed(1)
+  # events_ct <<- rpois(10000,input$lambda)
+  hist(events_ct(), probability = TRUE, breaks = as.numeric(input$n_breaks), 
        xlab = "Duration (minutes)", main = "Poisson histogram")
   }))
 
+
+events_sev <- reactive(rgamma(10000,input$alpha,rate=input$beta))
+        
 column(6,
        renderPlot({
-         set.seed(1)
-         events_sev <<- rgamma(10000,input$alpha,rate=input$beta)
-         hist(events_sev, probability = TRUE, breaks =
+          hist(events_sev(), probability = TRUE, breaks =
               as.numeric(input$n_breaks), 
               xlab = "Duration (minutes)", main = "Poisson histogram")
   }))
@@ -66,7 +68,7 @@ column(6,
 Here after performing 10000 simulations for total annual rainfal based on the parameters specified in the previous slide, the following histogram is resulted:
 ```{r}
 renderPlot({
-       hist(events_sev*events_ct, probability = TRUE, breaks =
+       hist(events_sev()*events_ct(), probability = TRUE, breaks =
               as.numeric(input$n_breaks), 
               xlab = "total annual rainfall", main = "Histogram for total annual rainfall for 10000 simlations")
   })
@@ -76,10 +78,8 @@ renderPlot({
 Here is a summary of the simulated raifalls
 ```{r, echo=T}
 renderText({
-  summary(events_sev*events_ct)})
+  summary(events_sev()*events_ct())})
 ```
-
-
 <br><br>
 The files are all available in git repo:
 https://github.com/vahidzm/RprodFinalProj
